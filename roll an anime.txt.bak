@@ -1,0 +1,167 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "AEWONNE",
+   LoadingTitle = "Logic Re-Sync Active",
+   LoadingSubtitle = "by xavier🥷🏿",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "roll an anime",
+      FileName = "InstantRollFix"
+   }
+})
+
+local MainTab = Window:CreateTab("Automation", 4483362458)
+
+-- Variables
+local autoRoll = false
+local autoBuy = false
+local autoHatch = false
+local selectedPet = "All Pets"
+
+-- Item Lists (Common Removed)
+local itemList = {
+    "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Galaxy", "Quantum", 
+    "Ascendant", "Devil", "Heavenly", "Magic", "Bramble", "Time Bender", 
+    "Infinity", "King Sun", "Ouroboros", "Molten Core", "Toxic Reactor", 
+    "King's Mantle", "The End", "Aetherial", "Radiant", "Celestial", 
+    "Phantom", "Anomaly", "Verca", "Vortex", "Bloodcode", "Doom", 
+    "Hellcore", "Verdict", "Pinnacle"
+}
+
+local hatchList = {"All Pets", "Crocodile", "Coconut", "Yeti", "Cupcake", "GoldenBasic"}
+
+MainTab:CreateSection("Rolling System")
+
+MainTab:CreateToggle({
+   Name = "ROLL ALL BLOCKS (MAX SPEED)",
+   CurrentValue = false,
+   Callback = function(Value)
+      autoRoll = Value
+      if autoRoll then
+         for _, name in ipairs(itemList) do
+            task.spawn(function()
+               local blockName = name .. "Block"
+               while autoRoll do
+                  local args = { blockName }
+                  task.spawn(function()
+                     if not autoRoll then return end 
+                     pcall(function()
+                        game:GetService("ReplicatedStorage")
+                           :WaitForChild("Network")
+                           :WaitForChild("Client")
+                           :WaitForChild("RollBlock")
+                           :InvokeServer(unpack(args))
+                     end)
+                  end)
+                  task.wait() 
+               end
+            end)
+         end
+      end
+   end,
+})
+
+MainTab:CreateSection("Purchase System")
+
+MainTab:CreateToggle({
+   Name = "BUY🤑💦 (ALL ITEMS)",
+   CurrentValue = false,
+   Callback = function(Value)
+      autoBuy = Value
+      if autoBuy then
+         for _, name in ipairs(itemList) do
+            task.spawn(function()
+               local blockName = name .. "Block"
+               while autoBuy do
+                  local args = { blockName }
+                  task.spawn(function()
+                     if not autoBuy then return end
+                     pcall(function()
+                        game:GetService("ReplicatedStorage")
+                           :WaitForChild("Network")
+                           :WaitForChild("Client")
+                           :WaitForChild("PurchaseItem")
+                           :InvokeServer(unpack(args))
+                     end)
+                  end)
+                  task.wait() 
+               end
+            end)
+         end
+      end
+   end,
+})
+
+MainTab:CreateSection("Hatching System")
+
+MainTab:CreateDropdown({
+   Name = "Select Pet to Hatch",
+   Options = hatchList,
+   CurrentOption = "All Pets",
+   Callback = function(Option)
+      selectedPet = Option
+   end,
+})
+
+MainTab:CreateToggle({
+   Name = "AUTO HATCH PETS",
+   CurrentValue = false,
+   Callback = function(Value)
+      autoHatch = Value
+      if autoHatch then
+         task.spawn(function()
+            while autoHatch do
+               if selectedPet == "All Pets" then
+                  for i = 2, #hatchList do 
+                     if not autoHatch then break end
+                     local args = { hatchList[i], 1 }
+                     task.spawn(function()
+                        pcall(function()
+                           game:GetService("ReplicatedStorage").Network.Client.Hatch:InvokeServer(unpack(args))
+                        end)
+                     end)
+                  end
+               else
+                  local args = { selectedPet, 1 }
+                  task.spawn(function()
+                     pcall(function()
+                        game:GetService("ReplicatedStorage").Network.Client.Hatch:InvokeServer(unpack(args))
+                     end)
+                  end)
+               end
+               task.wait(0.1)
+            end
+         end)
+      end
+   end,
+})
+
+MainTab:CreateSection("Cash Utility")
+
+local autoCollect = false
+MainTab:CreateToggle({
+   Name = "Auto Collect Plots (1-20)",
+   CurrentValue = false,
+   Callback = function(Value)
+      autoCollect = Value
+      task.spawn(function()
+         while autoCollect do
+            for i = 1, 20 do
+               if not autoCollect then break end
+               local args = { tostring(i) }
+               pcall(function()
+                  game:GetService("ReplicatedStorage")
+                     :WaitForChild("Network")
+                     :WaitForChild("Client")
+                     :WaitForChild("ClaimCash")
+                     :FireServer(unpack(args))
+               end)
+            end
+            task.wait(1)
+         end
+      end)
+   end,
+})
+
+Rayfield:LoadConfiguration()
